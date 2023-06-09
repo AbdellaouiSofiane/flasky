@@ -32,6 +32,7 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
 app.config['FLASKY_MAIL_SENDER'] = 'Flasky Admin <flasky@example.com>'
+app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
 mail = Mail(app)
 
 
@@ -80,6 +81,9 @@ def index():
             user = User(username=form.name.data)
             db.session.add(user)
             db.session.commit()
+            if app.config['FLASKY_ADMIN']:
+                send_email(app.config['FLASKY_ADMIN'],
+                           'New User', 'mail/new_user', user=user)
         else:
             session['known'] = True
         session['name'] = form.name.data
