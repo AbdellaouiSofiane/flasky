@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
+from flask_sqlalchemy import SQLAlchemy
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
@@ -12,6 +13,13 @@ bootstrap = Bootstrap(app)
 
 # app config
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'hard to guess string')
+
+# databse
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
+    os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 
 # forms
