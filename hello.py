@@ -22,6 +22,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
+# shell
+@app.shell_context_processor
+def make_shell_context():
+    return dict(db=db, User=User, Role=Role)
+
+
 # forms
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
