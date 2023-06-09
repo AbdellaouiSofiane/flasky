@@ -2,8 +2,9 @@ import os
 
 from flask import Flask, render_template, redirect, url_for, session
 from flask_bootstrap import Bootstrap
-from flask_wtf import FlaskForm
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
@@ -20,6 +21,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
     os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 # shell
@@ -55,6 +57,7 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 
+# views
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
