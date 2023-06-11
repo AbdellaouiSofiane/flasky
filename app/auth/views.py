@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, login_required, logout_user
 from .forms import LoginForm
 from . import auth
@@ -12,6 +12,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
+            next = request.args.get('next')
             if next is None or not next.startwith('/'):
                 next = url_for('main.index')
             return redirect(next)
