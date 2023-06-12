@@ -1,6 +1,8 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, login_required, logout_user, current_user
-from .forms import LoginForm, RegistrationForm, PasswordChangeForm, PasswordResetForm, PasswordResetRequestForm
+from .forms import (LoginForm, RegistrationForm, PasswordChangeForm,
+                    PasswordResetForm, PasswordResetRequestForm,
+                    EmailResetRequestForm)
 from . import auth
 from .. import db
 from ..email import send_email
@@ -9,6 +11,8 @@ from ..models import User
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -32,6 +36,8 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email=form.email.data,
@@ -134,3 +140,29 @@ def reset_password(token):
             flash('The reset link is invalid or has expired ! 🥲')
             return redirect(url_for('main.index'))
     return render_template('auth/reset-password.html', form=form)
+
+
+@auth.route('/change-email', methods=['GET', 'POST'])
+@login_required
+def email_reset_request():
+    form = EmailResetRequestForm()
+    if form.validate_on_submit():
+        token = current_user.generate_email_reset_token(email=form.email.data)
+        send_email(form.email.data, 'Reset Your Email',
+                   'auth/email/reset-email',
+                   user=current_user, token=token)
+        flash('An email with instructions to reset your email has been '
+              'sent to you.')
+        return redirect(url_for('main.index'))
+    return render_template('auth/reset-email.html', form=form)
+
+
+@auth.route('/confirm-email-change/<token>', methods=['GET', 'POST'])
+@login_required
+def email_reset(token):
+    if current_user.change_email(token):
+        db.session.commit()
+        flash('Your email address has been updated.')
+    else:
+        flash('Invalid request.')
+    return redirect(url_for('main.index'))

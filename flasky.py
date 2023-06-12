@@ -1,10 +1,21 @@
 import os
 from app import create_app, db
 from app.models import User, Role
+from flask import render_template
 from flask_migrate import Migrate
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
 
 
 @app.shell_context_processor

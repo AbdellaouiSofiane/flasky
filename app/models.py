@@ -57,9 +57,13 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'confirm': self.id})
 
-    def generate_reset_token(self, expiration=3600):
+    def generate_reset_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'reset': self.id})
+
+    def generate_email_reset_token(self, email):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id, 'email': email})
 
     def confirm(self, token, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -72,6 +76,27 @@ class User(UserMixin, db.Model):
         self.confirmed = True
         db.session.add(self)
         return True
+
+    def change_email(self, token, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token, max_age=expiration)
+        except SignatureExpired:
+            return False
+        print(data)
+        if data.get('user_id') != self.id:
+            return False
+        new_email = data.get('email')
+        if new_email is None:
+            return False
+        if self.query.filter_by(email=new_email).first() is not None:
+            return False
+        self.email = new_email
+        db.session.add(self)
+        return True
+
+    def __repr__(self):
+        return '<User %r>' % self.username
 
 
 @login_manager.user_loader
