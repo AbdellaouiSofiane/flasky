@@ -158,6 +158,11 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
+        db.session.commit()
+
     def __repr__(self):
         return '<User %r>' % self.username
 
