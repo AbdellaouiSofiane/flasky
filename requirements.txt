@@ -6,3 +6,4 @@ flask-migrate==4.0.4
 flask-mail==0.9.1
 flask-login==0.6.2
 email-validator==2.0.0.post2
+flask-moment==1.0.5
